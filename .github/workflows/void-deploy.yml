@@ -1,0 +1,35 @@
+name: Deploy to Cloudflare
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: void-cloudflare-deploy-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy
+        env:
+          # Add this scoped token at Settings → Secrets and variables → Actions.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # Required only for PostgreSQL/MySQL provisioning and migrations.
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Required in fresh checkouts when a Worker Version has no preview URL.
+          CLOUDFLARE_WORKERS_SUBDOMAIN: ${{ vars.CLOUDFLARE_WORKERS_SUBDOMAIN }}
+          # Required only when Cloudflare Access protects Worker readiness.
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: pnpm exec void deploy --platform cloudflare
