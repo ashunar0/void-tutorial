@@ -2,7 +2,7 @@ import { articles } from "@schema";
 import { defineHandler } from "void";
 import { getUser, requireAuth } from "void/auth";
 import { createInsertSchema } from "void/drizzle-zod";
-import { createArticle } from "../../src/domains/articles/commands";
+import { createArticle } from "#domains/articles/commands";
 
 export const loader = defineHandler((c) => {
   if (!getUser()) return c.redirect("/login");

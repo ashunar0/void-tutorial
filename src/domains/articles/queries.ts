@@ -1,6 +1,6 @@
 import { articles } from "@schema";
 import { db, desc, eq } from "void/db";
-import { users } from "../users/table";
+import { users } from "#domains/users/table";
 
 const PAGE_SIZE = 10;
 

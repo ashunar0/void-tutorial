@@ -2,6 +2,9 @@
   "name": "void-tutorial",
   "private": true,
   "type": "module",
+  "imports": {
+    "#domains/*": "./src/domains/*.ts"
+  },
   "devDependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

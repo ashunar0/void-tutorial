@@ -1,6 +1,6 @@
 import { sql } from "void/db";
 import { index, integer, sqliteTable, text } from "void/schema-d1";
-import { users } from "../src/domains/users/table";
+import { users } from "#domains/users/table";
 
 export const articles = sqliteTable(
   "articles",

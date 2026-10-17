@@ -2,7 +2,7 @@ import { articles } from "@schema";
 import { HTTPException } from "hono/http-exception";
 import { defineHandler, type InferProps } from "void";
 import { createSelectSchema } from "void/drizzle-zod";
-import { findArticleBySlug } from "../../../src/domains/articles/queries";
+import { findArticleBySlug } from "#domains/articles/queries";
 
 // withValidator 付きの loader は戻り値の Promise がほどかれない（Void 1.1.11 の型の穴）ので Awaited を足す
 export type Props = Awaited<InferProps<typeof loader>>;

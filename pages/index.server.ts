@@ -1,5 +1,5 @@
 import { defineHandler, type InferProps } from "void";
-import { listArticles } from "../src/domains/articles/queries";
+import { listArticles } from "#domains/articles/queries";
 
 export type Props = InferProps<typeof loader>;
 

@@ -17,7 +17,7 @@
 
 ## コードの置き場所
 
-ドメインごとに `src/domains/<ドメイン>/` に置く。読むものは `queries.ts`、書くものは `commands.ts`。`pages/*.server.ts` は、入力を確かめて、ここの関数を呼んで、返すか移動させるだけにする。
+ドメインごとに `src/domains/<ドメイン>/` に置く。読むものは `queries.ts`、書くものは `commands.ts`。import は `#domains/<ドメイン>/<ファイル>`（`package.json` の `imports`）で書く。tsconfig の `paths` にしないのは、`.void/tsconfig.json` が生成する `@schema` などの `paths` が丸ごと上書きされるため。`pages/*.server.ts` は、入力を確かめて、ここの関数を呼んで、返すか移動させるだけにする。
 
 Better Auth の `user` テーブルは Void が `.void/better-auth-schema.ts` に生成する。これを import するのは `src/domains/users/table.ts` だけにして、ほかのファイルはそこから `users` として読む。
 
