@@ -25,7 +25,7 @@ export function listArticles() {
 
 export async function findArticleBySlug(slug: string) {
   const [article] = await db
-    .select({ ...summary, body: articles.body })
+    .select({ ...summary, id: articles.id, body: articles.body })
     .from(articles)
     .innerJoin(users, byAuthor)
     .where(eq(articles.slug, slug));

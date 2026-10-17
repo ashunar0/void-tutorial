@@ -22,6 +22,13 @@
       "when": 1792231570584,
       "tag": "20261017100610_great_gideon",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792232427188,
+      "tag": "20261017102027_polite_sugar_man",
+      "breakpoints": true
     }
   ]
 }

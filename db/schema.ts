@@ -1,5 +1,5 @@
 import { sql } from "void/db";
-import { index, integer, sqliteTable, text } from "void/schema-d1";
+import { index, integer, primaryKey, sqliteTable, text } from "void/schema-d1";
 import { users } from "#domains/users/table";
 
 export const articles = sqliteTable(
@@ -17,5 +17,18 @@ export const articles = sqliteTable(
   (table) => [
     index("idx_articles_created").on(table.createdAt),
     index("idx_articles_author").on(table.authorId, table.createdAt),
+  ],
+);
+
+export const favorites = sqliteTable(
+  "favorites",
+  {
+    userId: text("user_id").notNull().references(() => users.id),
+    articleId: integer("article_id").notNull().references(() => articles.id, { onDelete: "cascade" }),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.articleId] }),
+    index("idx_favorites_article").on(table.articleId),
   ],
 );
