@@ -3,7 +3,8 @@
 ## 方針
 
 - 認証のテーブル（`user`、`session` など）は Void が作る。`db/schema.ts` には書かない
-- 自分のテーブルの会員 ID は、認証の `user.id`（文字列）をそのまま使う
+- 自分のテーブルの会員 ID は、認証の `user.id`（文字列）をそのまま使う。ユーザー名は `user.name` から読む
+- 会員を参照する外部キーは `profiles` ではなく認証の `user` に向ける。プロフィールの行がない会員もいるので
 - 記事・コメントの ID は自動採番の整数。URL には `slug` を出すので、ID が外から見えても困らない
 - 日時は `datetime('now')` の UTC 文字列（雛形と同じ）
 - いいね数は保存しない。`favorites` から数える
@@ -14,11 +15,11 @@
 Drizzle で `db/schema.ts` に書く。下は形を決めるための DDL。
 
 ```sql
--- プロフィール（認証の user と1対1）
+-- プロフィール（認証の user と1対1。設定画面で初めて保存したときに作る）
 CREATE TABLE profiles (
-  user_id     TEXT PRIMARY KEY REFERENCES user(id) ON DELETE CASCADE,
-  username    TEXT NOT NULL UNIQUE,
-  bio         TEXT NOT NULL DEFAULT '',
+  user_id       TEXT PRIMARY KEY REFERENCES user(id) ON DELETE CASCADE,
+  display_name  TEXT,
+  bio           TEXT NOT NULL DEFAULT '',
   image       TEXT,
   created_at  TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
@@ -31,7 +32,7 @@ CREATE TABLE articles (
   title        TEXT NOT NULL,
   description  TEXT NOT NULL,
   body         TEXT NOT NULL,          -- Markdown のまま
-  author_id    TEXT NOT NULL REFERENCES profiles(user_id),
+  author_id    TEXT NOT NULL REFERENCES user(id),
   created_at   TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -49,7 +50,7 @@ CREATE TABLE article_tags (
 
 -- いいね
 CREATE TABLE favorites (
-  user_id     TEXT NOT NULL REFERENCES profiles(user_id),
+  user_id     TEXT NOT NULL REFERENCES user(id),
   article_id  INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
   created_at  TEXT NOT NULL DEFAULT (datetime('now')),
   PRIMARY KEY (user_id, article_id)
@@ -59,15 +60,15 @@ CREATE TABLE favorites (
 CREATE TABLE comments (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   article_id  INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
-  author_id   TEXT NOT NULL REFERENCES profiles(user_id),
+  author_id   TEXT NOT NULL REFERENCES user(id),
   body        TEXT NOT NULL,
   created_at  TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 -- フォロー
 CREATE TABLE follows (
-  follower_id  TEXT NOT NULL REFERENCES profiles(user_id),
-  followee_id  TEXT NOT NULL REFERENCES profiles(user_id),
+  follower_id  TEXT NOT NULL REFERENCES user(id),
+  followee_id  TEXT NOT NULL REFERENCES user(id),
   created_at   TEXT NOT NULL DEFAULT (datetime('now')),
   PRIMARY KEY (follower_id, followee_id),
   CHECK (follower_id <> followee_id)
@@ -87,11 +88,12 @@ CREATE INDEX idx_follows_followee   ON follows (followee_id);
 
 ```sql
 -- 記事一覧（? は見ている人の ID。訪問者なら NULL）
-SELECT a.*, p.username, p.image,
+SELECT a.*, u.name AS username, p.display_name, p.image,
   (SELECT COUNT(*) FROM favorites f WHERE f.article_id = a.id)                    AS favorites_count,
   EXISTS (SELECT 1 FROM favorites f WHERE f.article_id = a.id AND f.user_id = ?)  AS favorited
 FROM articles a
-JOIN profiles p ON p.user_id = a.author_id
+JOIN user u ON u.id = a.author_id
+LEFT JOIN profiles p ON p.user_id = a.author_id   -- プロフィールがない会員もいる
 ORDER BY a.created_at DESC, a.id DESC
 LIMIT 10 OFFSET ?;
 
