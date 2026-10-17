@@ -2,12 +2,6 @@ import { sql } from "void/db";
 import { index, integer, sqliteTable, text } from "void/schema-d1";
 import { userTable } from "../.void/better-auth-schema";
 
-export const messages = sqliteTable("messages", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  text: text("text").notNull(),
-  createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
-});
-
 export const articles = sqliteTable(
   "articles",
   {

@@ -1,16 +1,22 @@
+import { articles } from "@schema";
 import { defineHandler, type InferProps } from "void";
-import { db, desc } from "void/db";
-import { messages } from "@schema";
-import { createInsertSchema } from "void/drizzle-zod";
+import { db, desc, eq } from "void/db";
+import { userTable } from "../.void/better-auth-schema";
 
 export type Props = InferProps<typeof loader>;
 
 export const loader = defineHandler(async () => {
-  const rows = await db.select().from(messages).orderBy(desc(messages.id));
-  return { messages: rows };
-});
-export const action = defineHandler.withValidator({
-  body: createInsertSchema(messages, { text: schema => schema.trim().min(1).max(1000) }).pick({ text: true }),
-})(async (_c, { body }) => {
-  await db.insert(messages).values(body);
+  const rows = await db
+    .select({
+      slug: articles.slug,
+      title: articles.title,
+      description: articles.description,
+      createdAt: articles.createdAt,
+      authorName: userTable.name,
+    })
+    .from(articles)
+    .innerJoin(userTable, eq(userTable.id, articles.authorId))
+    .orderBy(desc(articles.createdAt), desc(articles.id))
+    .limit(10);
+  return { articles: rows };
 });

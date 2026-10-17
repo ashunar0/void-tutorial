@@ -15,6 +15,13 @@
       "when": 1792231148300,
       "tag": "20261017095908_premium_taskmaster",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792231570584,
+      "tag": "20261017100610_great_gideon",
+      "breakpoints": true
     }
   ]
 }
