@@ -27,6 +27,7 @@
 ## 決めたこと
 
 - **いいねとフォローは1つの操作で切り替える。** 「いいね」と「取り消し」を別の action にせず、今の状態の逆にする。画面は今の状態を loader から受け取っているので、押すたびに読み直しが走れば表示はずれない
+- **登録とログインは `useForm` を使わず、画面から `auth.signUp.email` / `auth.signIn.email` を呼ぶ。** Void の公式の書き方（docs と playground の kitchen-sink）に合わせた。エラーは自分の state に入れる。Inertia の流儀なら action と `useForm` で書く場面だが、Void は Better Auth をサーバーから呼ぶ口を公開していない（`c.get("__voidAuth")` は非公開）。今回は Void の流儀を知るのが目的なので乗っかる
 - **記事を消したら `/` へ送る。** 消した記事の画面に留まると loader が 404 になる
 - **記事を作ったら、その記事の画面へ送る**
 
