@@ -1,6 +1,6 @@
 import { sql } from "void/db";
 import { index, integer, sqliteTable, text } from "void/schema-d1";
-import { userTable } from "../.void/better-auth-schema";
+import { users } from "../src/domains/users/table";
 
 export const articles = sqliteTable(
   "articles",
@@ -10,7 +10,7 @@ export const articles = sqliteTable(
     title: text("title").notNull(),
     description: text("description").notNull(),
     body: text("body").notNull(),
-    authorId: text("author_id").notNull().references(() => userTable.id),
+    authorId: text("author_id").notNull().references(() => users.id),
     createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
     updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
   },
