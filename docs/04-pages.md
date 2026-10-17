@@ -29,7 +29,7 @@
 - **いいねとフォローは `PUT` で「する」、`DELETE` で「しない」。** トグル（今の状態の逆にする）にしない。トグルだと二度押しで元に戻るので。`PUT` と `DELETE` はどちらも二度送っても結果が同じ。画面は loader から受け取った今の状態を見て、どちらを送るか決める
 - **登録とログインは `useForm` を使わず、画面から `auth.signUp.email` / `auth.signIn.email` を呼ぶ。** Void の公式の書き方（docs と playground の kitchen-sink）に合わせた。エラーは自分の state に入れる。Inertia の流儀なら action と `useForm` で書く場面だが、Void は Better Auth をサーバーから呼ぶ口を公開していない（`c.get("__voidAuth")` は非公開）。今回は Void の流儀を知るのが目的なので乗っかる
 - **いいねは `PUT` / `DELETE /api/articles/:slug/favorite`。ボタンは `src/components/FavoriteButton.tsx` の1つだけ。** 同じ操作がホーム・記事・プロフィールの3か所に出る。画面ごとに action を書くと「記事を探す → なければ 404 → いいね」が画面の数だけ並ぶ。ほかの画面の action に送る形も取れない。`action()` は `router.visit` で送り先の画面に移動するので、ホームから記事の action に送ると記事の画面に移ってしまう。また、名前付き action を呼ぶと URL に `?favorite` が残る。訪問者が押したら API が 401 を返し、ボタンが `/login` へ移動させる
-- **一覧に付ける集計は loader で組み立てる。** 記事を引いてから、`getFavoriteStates(articleIds, viewerId)` で表示する分をまとめて引いてくっつける。記事のクエリにいいねを混ぜないので、articles と favorites はお互いを知らない
+- **ドメインをまたぐ組み合わせは loader が書く。** ドメイン（`src/domains/`）は1つのドメインのことだけをやり、画面に要るものを集めて組み合わせるのは loader の役割。たとえば一覧は、記事を引いてから `getFavoriteStates(articleIds, viewerId)` でまとめて引いてくっつける。フォロー中の新着は、`listFolloweeIds` で ID を引いてから `listArticles({ authorIds })` に渡す。ドメインどうしはお互いを import しない。同じ組み合わせが複数の loader に出ても、画面ごとに組み合わせ方が少しずつ違うので共通化しない（またぐ処理の置き場を別に作る案は採らなかった）
 - **記事の削除・コメントの投稿・コメントの削除は、記事の画面の名前付き action（`?deleteArticle` / `?postComment` / `?deleteComment`）。** どれもこの画面にしか出ないので API にしない。コメントの投稿は `useForm` を使いたい。`useForm` は pages の action にしか送れない（型は `ActionUrl`、送信は `router.visit`）
 - **記事を消したら `/` へ送る。** 消した記事の画面に留まると loader が 404 になる
 - **コメントを送ったら、画面で入力欄を空にする。** `useForm` は成功すると送った内容を初期値にするので `reset()` では空にならない。`wasSuccessful` を見て `setData` する
@@ -38,6 +38,6 @@
 
 ## まだ決めていないこと
 
-- 名前付き action のあとの URL に `?アクション名` が残る。action から `c.redirect("/")` を返すと移動はするが、移動先も `/?deleteArticle` になる。リダイレクト先に元の検索文字列がくっつくらしい。Void に報告するか決める
+- リダイレクト先に、元の URL の検索文字列がくっつく。名前付き action から `c.redirect("/")` を返すと `/?deleteArticle` に、`/?feed=following` の loader から `c.redirect("/login")` を返すと `/login?feed=following` になる。名前付き action のあと URL に `?アクション名` が残るのも同じ原因と思われる。Void に報告するか決める
 
 - Markdown を HTML にするライブラリと、どこで変換するか（loader か画面か）
