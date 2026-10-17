@@ -32,3 +32,15 @@ export const favorites = sqliteTable(
     index("idx_favorites_article").on(table.articleId),
   ],
 );
+
+export const comments = sqliteTable(
+  "comments",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    articleId: integer("article_id").notNull().references(() => articles.id, { onDelete: "cascade" }),
+    authorId: text("author_id").notNull().references(() => users.id),
+    body: text("body").notNull(),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (table) => [index("idx_comments_article").on(table.articleId, table.createdAt)],
+);

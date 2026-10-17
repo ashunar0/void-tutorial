@@ -40,7 +40,7 @@ Better Auth の `user` テーブルは Void が `.void/better-auth-schema.ts` �
 | 置き場所 | 守るもの |
 |---|---|
 | DB | slug・タグ名の重複なし、いいね・フォロー・タグ付けの重複なし、記事削除時の連鎖削除、外部キー |
-| アプリ | ユーザー名の形と重複（Better Auth は `name` を確かめないので、`auth.ts` の `databaseHooks.user.create.before` で守る）、書き手本人だけが記事を編集・削除できる（`articles/policy.ts` の `canEdit`）、本人だけがコメントを消せる、自分をフォローできない、タグは5個まで、タグ名の正規化 |
+| アプリ | ユーザー名の形と重複（Better Auth は `name` を確かめないので、`auth.ts` の `databaseHooks.user.create.before` で守る）、書き手本人だけが記事を編集・削除できる（`articles/policy.ts` の `canEdit`）、本人だけがコメントを消せる（`comments/policy.ts` の `canDeleteComment`。記事の書き手でも他人のコメントは消せない）、自分をフォローできない、タグは5個まで、タグ名の正規化 |
 
 ## 計算値
 

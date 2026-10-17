@@ -28,12 +28,16 @@
 
 - **いいねとフォローは `PUT` で「する」、`DELETE` で「しない」。** トグル（今の状態の逆にする）にしない。トグルだと二度押しで元に戻るので。`PUT` と `DELETE` はどちらも二度送っても結果が同じ。画面は loader から受け取った今の状態を見て、どちらを送るか決める
 - **登録とログインは `useForm` を使わず、画面から `auth.signUp.email` / `auth.signIn.email` を呼ぶ。** Void の公式の書き方（docs と playground の kitchen-sink）に合わせた。エラーは自分の state に入れる。Inertia の流儀なら action と `useForm` で書く場面だが、Void は Better Auth をサーバーから呼ぶ口を公開していない（`c.get("__voidAuth")` は非公開）。今回は Void の流儀を知るのが目的なので乗っかる
-- **いいねは `PUT` / `DELETE /api/articles/:slug/favorite`。ボタンは `src/components/FavoriteButton.tsx` の1つだけ。** 同じ操作がホーム・記事・プロフィールの3か所に出る。画面ごとに action を書くと「記事を探す → なければ 404 → いいね」が画面の数だけ並ぶ。ほかの画面の action に送る形も取れない。`action()` は `router.visit` で送り先の画面に移動するので、ホームから記事の action に送ると記事の画面に移ってしまう。また、名前付き action を `action()` で呼ぶと URL に `?favorite` が残る（`c.redirect` を返しても消えない。理由は未調査）。訪問者が押したら API が 401 を返し、ボタンが `/login` へ移動させる
+- **いいねは `PUT` / `DELETE /api/articles/:slug/favorite`。ボタンは `src/components/FavoriteButton.tsx` の1つだけ。** 同じ操作がホーム・記事・プロフィールの3か所に出る。画面ごとに action を書くと「記事を探す → なければ 404 → いいね」が画面の数だけ並ぶ。ほかの画面の action に送る形も取れない。`action()` は `router.visit` で送り先の画面に移動するので、ホームから記事の action に送ると記事の画面に移ってしまう。また、名前付き action を呼ぶと URL に `?favorite` が残る。訪問者が押したら API が 401 を返し、ボタンが `/login` へ移動させる
 - **一覧に付ける集計は loader で組み立てる。** 記事を引いてから、`getFavoriteStates(articleIds, viewerId)` で表示する分をまとめて引いてくっつける。記事のクエリにいいねを混ぜないので、articles と favorites はお互いを知らない
-- **記事の削除は、記事の画面の action（`DELETE`）。** 削除のボタンはこの画面にしか出ないので API にしない。消したら `/` へ送る。消した記事の画面に留まると loader が 404 になる。名前のない action から返した `c.redirect` は効く（名前付き action だと URL に `?favorite` が残ったのとは違う）
+- **記事の削除・コメントの投稿・コメントの削除は、記事の画面の名前付き action（`?deleteArticle` / `?postComment` / `?deleteComment`）。** どれもこの画面にしか出ないので API にしない。コメントの投稿は `useForm` を使いたい。`useForm` は pages の action にしか送れない（型は `ActionUrl`、送信は `router.visit`）
+- **記事を消したら `/` へ送る。** 消した記事の画面に留まると loader が 404 になる
+- **コメントを送ったら、画面で入力欄を空にする。** `useForm` は成功すると送った内容を初期値にするので `reset()` では空にならない。`wasSuccessful` を見て `setData` する
 - **「編集」「削除」を出すかは loader が決める。** loader が `canEdit` の結果を返し、画面は書き手の ID と自分の ID を比べない。判定を `policy.ts` の1か所にするため
 - **記事を作ったら、その記事の画面へ送る**
 
 ## まだ決めていないこと
+
+- 名前付き action のあとの URL に `?アクション名` が残る。action から `c.redirect("/")` を返すと移動はするが、移動先も `/?deleteArticle` になる。リダイレクト先に元の検索文字列がくっつくらしい。Void に報告するか決める
 
 - Markdown を HTML にするライブラリと、どこで変換するか（loader か画面か）

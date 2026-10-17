@@ -6,6 +6,10 @@ import { createSelectSchema } from "void/drizzle-zod";
 import { deleteArticle } from "#domains/articles/commands";
 import { canEdit } from "#domains/articles/policy";
 import { findArticleBySlug } from "#domains/articles/queries";
+import { createComment, deleteComment } from "#domains/comments/commands";
+import { commentInput, commentRef } from "#domains/comments/input";
+import { canDeleteComment } from "#domains/comments/policy";
+import { findComment, listComments } from "#domains/comments/queries";
 import { getFavoriteState } from "#domains/favorites/queries";
 
 const params = createSelectSchema(articles).pick({ slug: true });
@@ -17,17 +21,35 @@ export const loader = defineHandler.withValidator({ params })(async (_c, { param
   const article = await findArticleOr404(params.slug);
   const viewerId = getUser()?.id ?? null;
   const favorite = await getFavoriteState(article.id, viewerId);
-  return { article, favorite, canEdit: canEdit(article, viewerId) };
+  const rows = await listComments(article.id);
+  const comments = rows.map(({ authorId, ...comment }) => ({ ...comment, canDelete: canDeleteComment({ authorId }, viewerId) }));
+  return { article, favorite, comments, canEdit: canEdit(article, viewerId) };
 });
 
-// 削除のボタンはこの画面にしか出ないので、API ではなくこの画面の action にする
-export const action = defineHandler.withValidator({ params })(async (c, { params }) => {
-  const user = requireAuth(c);
-  const article = await findArticleOr404(params.slug);
-  if (!canEdit(article, user.id)) throw new HTTPException(403, { message: "この記事は削除できません" });
-  await deleteArticle(article.id);
-  return c.redirect("/");
-});
+// どれもこの画面にしかない操作なので、API ではなくこの画面の action にする
+export const actions = {
+  deleteArticle: defineHandler.withValidator({ params })(async (c, { params }) => {
+    const user = requireAuth(c);
+    const article = await findArticleOr404(params.slug);
+    if (!canEdit(article, user.id)) throw new HTTPException(403, { message: "この記事は削除できません" });
+    await deleteArticle(article.id);
+    return c.redirect("/");
+  }),
+
+  postComment: defineHandler.withValidator({ params, body: commentInput })(async (c, { params, body }) => {
+    const user = requireAuth(c);
+    const article = await findArticleOr404(params.slug);
+    await createComment({ articleId: article.id, authorId: user.id, body: body.body });
+  }),
+
+  deleteComment: defineHandler.withValidator({ body: commentRef })(async (c, { body }) => {
+    const user = requireAuth(c);
+    const comment = await findComment(body.id);
+    if (!comment) throw new HTTPException(404, { message: "コメントが見つかりません" });
+    if (!canDeleteComment(comment, user.id)) throw new HTTPException(403, { message: "このコメントは削除できません" });
+    await deleteComment(comment.id);
+  }),
+};
 
 async function findArticleOr404(slug: string) {
   const article = await findArticleBySlug(slug);
