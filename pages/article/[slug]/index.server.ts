@@ -11,6 +11,8 @@ import { commentInput, commentRef } from "#domains/comments/input";
 import { canDeleteComment } from "#domains/comments/policy";
 import { findComment, listComments } from "#domains/comments/queries";
 import { getFavoriteState } from "#domains/favorites/queries";
+import { canFollow } from "#domains/follows/policy";
+import { isFollowing } from "#domains/follows/queries";
 
 const params = createSelectSchema(articles).pick({ slug: true });
 
@@ -23,7 +25,8 @@ export const loader = defineHandler.withValidator({ params })(async (_c, { param
   const favorite = await getFavoriteState(article.id, viewerId);
   const rows = await listComments(article.id);
   const comments = rows.map(({ authorId, ...comment }) => ({ ...comment, canDelete: canDeleteComment({ authorId }, viewerId) }));
-  return { article, favorite, comments, canEdit: canEdit(article, viewerId) };
+  const author = { following: await isFollowing(viewerId, article.authorId), canFollow: canFollow(viewerId, article.authorId) };
+  return { article, favorite, comments, author, canEdit: canEdit(article, viewerId) };
 });
 
 // どれもこの画面にしかない操作なので、API ではなくこの画面の action にする

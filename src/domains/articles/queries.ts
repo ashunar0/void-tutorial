@@ -1,5 +1,5 @@
 import { articles } from "@schema";
-import { db, desc, eq } from "void/db";
+import { db, desc, eq, inArray } from "void/db";
 import { users } from "#domains/users/table";
 
 const PAGE_SIZE = 10;
@@ -15,11 +15,14 @@ const summary = {
 };
 const byAuthor = eq(users.id, articles.authorId);
 
-export function listArticles() {
+// authorIds を渡すと、その会員たちが書いた記事だけにする（プロフィール、フォロー中の新着）
+export async function listArticles(filter: { authorIds?: string[] } = {}) {
+  if (filter.authorIds?.length === 0) return [];
   return db
     .select(summary)
     .from(articles)
     .innerJoin(users, byAuthor)
+    .where(filter.authorIds ? inArray(articles.authorId, filter.authorIds) : undefined)
     .orderBy(desc(articles.createdAt), desc(articles.id))
     .limit(PAGE_SIZE);
 }

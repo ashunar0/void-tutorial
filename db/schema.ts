@@ -1,5 +1,5 @@
 import { sql } from "void/db";
-import { index, integer, primaryKey, sqliteTable, text } from "void/schema-d1";
+import { check, index, integer, primaryKey, sqliteTable, text } from "void/schema-d1";
 import { users } from "#domains/users/table";
 
 export const articles = sqliteTable(
@@ -43,4 +43,18 @@ export const comments = sqliteTable(
     createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
   },
   (table) => [index("idx_comments_article").on(table.articleId, table.createdAt)],
+);
+
+export const follows = sqliteTable(
+  "follows",
+  {
+    followerId: text("follower_id").notNull().references(() => users.id),
+    followeeId: text("followee_id").notNull().references(() => users.id),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (table) => [
+    primaryKey({ columns: [table.followerId, table.followeeId] }),
+    index("idx_follows_followee").on(table.followeeId),
+    check("chk_follows_not_self", sql`${table.followerId} <> ${table.followeeId}`),
+  ],
 );

@@ -9,7 +9,7 @@ export default function HomePage({ articles }: Props) {
       {articles.length === 0 && <p>まだ記事がありません</p>}
       {articles.map((article) => (
         <article key={article.slug}>
-          <p>@{article.authorName} ・ {article.createdAt}</p>
+          <p><Link href={`/profile/${article.authorName}`}>@{article.authorName}</Link> ・ {article.createdAt}</p>
           <FavoriteButton slug={article.slug} state={article.favorite} />
           <h2><Link href={`/article/${article.slug}`}>{article.title}</Link></h2>
           <p>{article.description}</p>

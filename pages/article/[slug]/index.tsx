@@ -1,9 +1,10 @@
 import { action, Form, Link, useForm, useShared } from "@void/react";
 import { useEffect } from "react";
 import { FavoriteButton } from "#components/FavoriteButton";
+import { FollowButton } from "#components/FollowButton";
 import type { Props } from "./index.server";
 
-export default function ArticlePage({ article, favorite, comments, canEdit }: Props) {
+export default function ArticlePage({ article, favorite, comments, author, canEdit }: Props) {
   const { currentUser } = useShared();
 
   const handleDelete = () => {
@@ -13,7 +14,8 @@ export default function ArticlePage({ article, favorite, comments, canEdit }: Pr
   return (
     <main>
       <h1>{article.title}</h1>
-      <p>@{article.authorName} ・ {article.createdAt}</p>
+      <p><Link href={`/profile/${article.authorName}`}>@{article.authorName}</Link> ・ {article.createdAt}</p>
+      {author.canFollow && <FollowButton username={article.authorName} following={author.following} />}
       <FavoriteButton slug={article.slug} state={favorite} />
       {canEdit && (
         <>
