@@ -6,6 +6,7 @@ const PAGE_SIZE = 10;
 
 // 一覧と詳細で共通の項目。書き手はユーザー名だけを出し、メールアドレスは選ばない
 const summary = {
+  id: articles.id,
   slug: articles.slug,
   title: articles.title,
   description: articles.description,
@@ -25,7 +26,7 @@ export function listArticles() {
 
 export async function findArticleBySlug(slug: string) {
   const [article] = await db
-    .select({ ...summary, id: articles.id, body: articles.body })
+    .select({ ...summary, body: articles.body })
     .from(articles)
     .innerJoin(users, byAuthor)
     .where(eq(articles.slug, slug));

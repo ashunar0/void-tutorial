@@ -28,10 +28,12 @@
 
 - **いいねとフォローは1つの action で「する / しない」を受け取る。** 「いいね」と「取り消し」を別の action にしない。トグル（今の状態の逆にする）にもしない。トグルだと二度押しで元に戻るので。画面は loader から受け取った今の状態の逆を送る
 - **登録とログインは `useForm` を使わず、画面から `auth.signUp.email` / `auth.signIn.email` を呼ぶ。** Void の公式の書き方（docs と playground の kitchen-sink）に合わせた。エラーは自分の state に入れる。Inertia の流儀なら action と `useForm` で書く場面だが、Void は Better Auth をサーバーから呼ぶ口を公開していない（`c.get("__voidAuth")` は非公開）。今回は Void の流儀を知るのが目的なので乗っかる
+- **いいね・フォローは画面ごとに action を書き、中身は `src/domains/` の関数を呼ぶ。** 同じ操作がホーム・記事・プロフィールの3か所に出る。ほかの画面の action に送る形は取れない。`action()` は `router.visit` で送り先の画面に移動するので、ホームから記事の action に送ると記事の画面に移ってしまう。`routes/` の API にもしない。画面の読み直しを action に任せられなくなるので
+- **一覧に付ける集計は loader で組み立てる。** 記事を引いてから、`getFavoriteStates(articleIds, viewerId)` で表示する分をまとめて引いてくっつける。記事のクエリにいいねを混ぜないので、articles と favorites はお互いを知らない
 - **記事を消したら `/` へ送る。** 消した記事の画面に留まると loader が 404 になる
 - **記事を作ったら、その記事の画面へ送る**
 
 ## まだ決めていないこと
 
-- **いいね・フォローを3つの画面にどう置くか。** 同じ操作がホーム・記事・プロフィールの3か所に出る。候補は (a) 画面ごとに action を書いて中身は共通の関数を呼ぶ、(b) `routes/` に API を1本作って `void/client` の `fetch` で呼ぶ、(c) 1つの画面の action に他の画面から送る。どれが読めるかを、最初に2か所目が出たときに決める
+- 名前付き action を `action()` で呼ぶと、URL に `?favorite` が残る。action から `c.redirect` を返しても消えない。Void のクライアントにはリダイレクトに追従する処理があるので、なぜ効かないかは未調査
 - Markdown を HTML にするライブラリと、どこで変換するか（loader か画面か）
