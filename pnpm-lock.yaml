@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      better-auth:
+        specifier: 1.7.10
+        version: 1.7.10(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@cloudflare/workers-types@5.20261016.1)(better-sqlite3@13.0.3)(kysely@0.29.6)(mysql2@3.24.6(@types/node@26.6.5))(pg@8.23.1))(mysql2@3.24.6(@types/node@26.6.5))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5)
       hono:
         specifier: ^4.11.9
         version: 4.13.13
