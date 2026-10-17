@@ -17,6 +17,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <Link href="/">conduit</Link>
         {currentUser ? (
           <>
+            <Link href="/editor"> 記事を書く</Link>
             <span> @{currentUser.name}</span>
             <button onClick={handleSignOut}>ログアウト</button>
           </>
