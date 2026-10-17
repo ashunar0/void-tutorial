@@ -17,7 +17,7 @@
 
 ## コードの置き場所
 
-ドメインごとに `src/domains/<ドメイン>/` に置く。読むものは `queries.ts`、書くものは `commands.ts`。import は `#domains/<ドメイン>/<ファイル>`（`package.json` の `imports`）で書く。tsconfig の `paths` にしないのは、`.void/tsconfig.json` が生成する `@schema` などの `paths` が丸ごと上書きされるため。`pages/*.server.ts` は、入力を確かめて、ここの関数を呼んで、返すか移動させるだけにする。
+ドメインごとに `src/domains/<ドメイン>/` に置く。読むものは `queries.ts`、書くものは `commands.ts`、入力の検証ルールは `input.ts`、誰が何をできるかは `policy.ts`。import は `#domains/<ドメイン>/<ファイル>`（`package.json` の `imports`）で書く。tsconfig の `paths` にしないのは、`.void/tsconfig.json` が生成する `@schema` などの `paths` が丸ごと上書きされるため。`pages/*.server.ts` は、入力を確かめて、ここの関数を呼んで、返すか移動させるだけにする。
 
 Better Auth の `user` テーブルは Void が `.void/better-auth-schema.ts` に生成する。これを import するのは `src/domains/users/table.ts` だけにして、ほかのファイルはそこから `users` として読む。
 
@@ -40,7 +40,7 @@ Better Auth の `user` テーブルは Void が `.void/better-auth-schema.ts` �
 | 置き場所 | 守るもの |
 |---|---|
 | DB | slug・タグ名の重複なし、いいね・フォロー・タグ付けの重複なし、記事削除時の連鎖削除、外部キー |
-| アプリ | ユーザー名の形と重複（Better Auth は `name` を確かめないので、`auth.ts` の `databaseHooks.user.create.before` で守る）、書き手本人だけが記事を編集・削除できる、本人だけがコメントを消せる、自分をフォローできない、タグは5個まで、タグ名の正規化 |
+| アプリ | ユーザー名の形と重複（Better Auth は `name` を確かめないので、`auth.ts` の `databaseHooks.user.create.before` で守る）、書き手本人だけが記事を編集・削除できる（`articles/policy.ts` の `canEdit`）、本人だけがコメントを消せる、自分をフォローできない、タグは5個まで、タグ名の正規化 |
 
 ## 計算値
 
